@@ -9,7 +9,6 @@ lazy val supportedScalaVersions = List(scala212, scala213)
 ThisBuild / scalafmtOnCompile := false
 ThisBuild / organization := "io.github.paoloboni"
 ThisBuild / startYear := Some(2020)
-ThisBuild / licenses += ("Apache-2.0", new URL("https://www.apache.org/licenses/LICENSE-2.0.txt"))
 
 lazy val root = (project in file("."))
   .settings(
