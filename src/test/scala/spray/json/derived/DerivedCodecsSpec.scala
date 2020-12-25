@@ -47,7 +47,7 @@ class DerivedCodecsSpec
       }
     }
 
-    scenario("tuple type") {
+    Scenario("tuple type") {
       type Cat = (String, Int)
       forAll { cat: Cat =>
         checkRoundtrip[Cat](
@@ -57,7 +57,7 @@ class DerivedCodecsSpec
       }
     }
 
-    scenario("sum types") {
+    Scenario("sum types") {
       sealed trait Animal
       case class Cat(name: String, livesLeft: Int)   extends Animal
       case class Dog(name: String, bonesHidden: Int) extends Animal
@@ -76,7 +76,7 @@ class DerivedCodecsSpec
       }
     }
 
-    scenario("sum types with discriminator") {
+    Scenario("sum types with discriminator") {
       @Discriminator("animalType")
       sealed trait Animal
       case class Cat(name: String, livesLeft: Int)   extends Animal
@@ -96,7 +96,7 @@ class DerivedCodecsSpec
       }
     }
 
-    scenario("recursive types") {
+    Scenario("recursive types") {
       sealed trait Tree
       case class Leaf(s: String)            extends Tree
       case class Node(lhs: Tree, rhs: Tree) extends Tree
@@ -110,7 +110,7 @@ class DerivedCodecsSpec
 //      }
     }
 
-    scenario("polylmorphic types") {
+    Scenario("polylmorphic types") {
       case class Quux[A](value: A)
       forAll { quux: Quux[String] =>
         checkRoundtrip[Quux[String]](
