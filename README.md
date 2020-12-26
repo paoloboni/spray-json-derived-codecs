@@ -8,11 +8,10 @@ A library to derive `JsonFormat[T]` instances for `T`.
 The derivation currently supports:
 - sum types
 - product types
+- recursive types
 - polymorphic types
 
 Undefined optional members are not rendered.
-
-The library at the moment doesn't support recursive types.
 
 ## Installation
 
