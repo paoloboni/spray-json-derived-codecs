@@ -14,7 +14,9 @@
  * limitations under the License.
  */
 
-package spray.json.derived
+package spray
+package json
+package derived
 
 import org.scalacheck.{Arbitrary, Gen, ScalacheckShapeless}
 import org.scalactic.TypeCheckedTripleEquals
@@ -22,8 +24,6 @@ import org.scalatest.Assertion
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
-import shapeless.LabelledGeneric
-import spray.json._
 
 class DerivedCodecsSpec
     extends AnyFeatureSpec
@@ -31,7 +31,6 @@ class DerivedCodecsSpec
     with ScalacheckShapeless
     with Matchers
     with TypeCheckedTripleEquals
-    with Instances
     with DefaultJsonProtocol {
 
   implicit val arbitraryString: Arbitrary[String] = Arbitrary(Gen.alphaNumStr)

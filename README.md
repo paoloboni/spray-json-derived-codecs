@@ -23,14 +23,23 @@ libraryDependencies += "io.github.paoloboni" %% "spray-json-derived-codecs" % "<
 
 ## Usage
 
-### Product types
+Add the following import to enable the automatic derivation of the formats:
+
+```scala
+import spray.json.derived._
+```
+
+### Examples
+
+#### Product types
 
 ```scala
 import spray.json._
+import spray.json.derived._
 
 case class Cat(name: String, livesLeft: Int)
 
-object Test extends App with DefaultJsonProtocol with derived.Instances {
+object Test extends App with DefaultJsonProtocol {
   val oliver: Cat = Cat("Oliver", 7)
   val encoded     = oliver.toJson
   
@@ -39,16 +48,19 @@ object Test extends App with DefaultJsonProtocol with derived.Instances {
 }
 ```
 
-### Union types
+#### Union types
+
+Union types are encoded by using a discriminator field, which by default is `type`.
 
 ```scala
 import spray.json._
+import spray.json.derived._
 
 sealed trait Pet
 case class Cat(name: String, livesLeft: Int)   extends Pet
 case class Dog(name: String, bonesHidden: Int) extends Pet
 
-object Test extends App with DefaultJsonProtocol with derived.Instances {
+object Test extends App with DefaultJsonProtocol {
   val oliver: Pet   = Cat("Oliver", 7)
   val encodedOliver = oliver.toJson
   assert(encodedOliver == """{"livesLeft":7,"name":"Oliver","type":"Cat"}""".parseJson)
@@ -61,24 +73,83 @@ object Test extends App with DefaultJsonProtocol with derived.Instances {
 }
 ```
 
-Union types are encoded by using a discriminator field, which by default is `type`.
-
-The discriminator can be customised when needed, by annotating the top-level type with the `@Discriminator` annotation:
+The discriminator can be customised by annotating the union type with the `@Discriminator` annotation:
 
 ```scala
 import spray.json._
-import spray.json.derived.Discriminator
+import spray.json.derived._
 
 @Discriminator("petType")
 sealed trait Pet
 case class Cat(name: String, livesLeft: Int)   extends Pet
 case class Dog(name: String, bonesHidden: Int) extends Pet
 
-object Test extends App with DefaultJsonProtocol with derived.Instances {
+object Test extends App with DefaultJsonProtocol {
   val oliver: Pet   = Cat("Oliver", 7)
   val encodedOliver = oliver.toJson
   assert(encodedOliver == """{"livesLeft":7,"name":"Oliver","petType":"Cat"}""".parseJson)
   assert(encodedOliver.convertTo[Pet] == oliver)
+}
+```
+
+#### Recursive types
+
+```scala
+import spray.json._
+import spray.json.derived._
+
+sealed trait Tree
+case class Leaf(s: String)            extends Tree
+case class Node(lhs: Tree, rhs: Tree) extends Tree
+
+object Test extends App with DefaultJsonProtocol {
+
+  val obj: Tree = Node(Node(Leaf("1"), Leaf("2")), Leaf("3"))
+  val encoded   = obj.toJson
+  val expectedJson =
+    """{
+      |  "lhs": {
+      |    "lhs": {
+      |      "s": "1",
+      |      "type": "Leaf"
+      |    },
+      |    "rhs": {
+      |      "s": "2",
+      |      "type": "Leaf"
+      |    },
+      |    "type": "Node"
+      |  },
+      |  "rhs": {
+      |    "s": "3",
+      |    "type": "Leaf"
+      |  },
+      |  "type": "Node"
+      |}
+      |""".stripMargin
+  assert(encoded == expectedJson.parseJson)
+  assert(encoded.convertTo[Tree] == obj)
+}
+```
+
+#### Polymorphic types
+
+```scala
+import spray.json._
+import spray.json.derived._
+
+case class Container[T](value: T)
+
+object Test extends App with DefaultJsonProtocol {
+
+  val cString: Container[String] = Container("abc")
+  val cStringEncoded             = cString.toJson
+  assert(cStringEncoded == """{"value":"abc"}""".parseJson)
+  assert(cStringEncoded.convertTo[Container[String]] == cString)
+
+  val cInt: Container[Int] = Container(123)
+  val cIntEncoded          = cInt.toJson
+  assert(cIntEncoded == """{"value":123}""".parseJson)
+  assert(cIntEncoded.convertTo[Container[Int]] == cInt)
 }
 ```
 

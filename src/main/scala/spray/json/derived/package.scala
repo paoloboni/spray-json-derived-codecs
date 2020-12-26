@@ -14,16 +14,13 @@
  * limitations under the License.
  */
 
-package spray.json.derived
+package spray.json
 
 import shapeless.Annotation
-import spray.json.JsonFormat
 
-trait Instances {
+package object derived {
   implicit def deriveJsonFormat[T](implicit
       mk: MkJsonFormat[T],
       discriminator: Annotation[Option[Discriminator], T]
   ): JsonFormat[T] = mk.value(discriminator().getOrElse(Discriminator.default))
 }
-
-object Instances extends Instances
