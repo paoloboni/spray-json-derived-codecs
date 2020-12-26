@@ -13,8 +13,6 @@ The derivation currently supports:
 - recursive types
 - polymorphic types
 
-Undefined optional members are not rendered.
-
 ## Installation
 
 If you use sbt add the following dependency to your build file:
@@ -152,6 +150,42 @@ object Test extends App with DefaultJsonProtocol {
   val cIntEncoded          = cInt.toJson
   assert(cIntEncoded == """{"value":123}""".parseJson)
   assert(cIntEncoded.convertTo[Container[Int]] == cInt)
+}
+```
+
+#### Undefined optional members
+
+By default, undefined optional members are not rendered:
+
+```scala
+import spray.json._
+import spray.json.derived._
+
+case class Dog(toy: Option[String])
+
+object Test extends App with DefaultJsonProtocol {
+  val aDog        = Dog(toy = None)
+  val aDogEncoded = aDog.toJson
+  assert(aDogEncoded.compactPrint == "{}")
+}
+```
+
+It's possible to render undefined optional members as null values by specifying an alternative configuration.
+Use the mixin `derived.WithConfiguration` and specify the alternative configuration as implicit value:
+
+```scala
+import spray.json._
+import spray.json.derived._
+
+case class Dog(toy: Option[String])
+
+object Test extends App with DefaultJsonProtocol with derived.WithConfiguration {
+
+  implicit val conf: Configuration = Configuration(renderNullOptions = true)
+
+  val aDog        = Dog(toy = None)
+  val aDogEncoded = aDog.toJson
+  assert(aDogEncoded.compactPrint == """{"toy":null}""")
 }
 ```
 

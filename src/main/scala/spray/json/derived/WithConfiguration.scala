@@ -14,13 +14,8 @@
  * limitations under the License.
  */
 
-package spray.json
+package spray.json.derived
 
-import shapeless.Annotation
-
-package object derived extends WithConfiguration {
-  implicit def deriveJsonFormat[T](implicit
-      mk: MkJsonFormat[T],
-      discriminator: Annotation[Option[Discriminator], T]
-  ): JsonFormat[T] = mk.value(discriminator().getOrElse(Discriminator.default))
+trait WithConfiguration {
+  implicit val defaultConfiguration: Configuration = Configuration(renderNullOptions = false)
 }

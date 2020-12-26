@@ -28,7 +28,8 @@ trait LowPriority {
       witness: Witness.Aux[K],
       gen: LabelledGeneric.Aux[H, R],
       hEncoder: Lazy[MkJsonFormat[R]],
-      tEncoder: MkJsonFormat[T]
+      tEncoder: MkJsonFormat[T],
+      configuration: Configuration
   ): MkJsonFormat[FieldType[K, H] :: T] =
     new MkJsonFormat[FieldType[K, H] :: T](discriminator =>
       new JsonFormat[FieldType[K, H] :: T] {
@@ -39,7 +40,8 @@ trait LowPriority {
             .value(discriminator)
             .read(json)
         override def write(obj: FieldType[K, H] :: T): JsValue = obj match {
-          case h :: t if h.isInstanceOf[None.type] => tEncoder.value(discriminator).write(t)
+          case h :: t if h.isInstanceOf[None.type] && !configuration.renderNullOptions =>
+            tEncoder.value(discriminator).write(t)
           case h :: t =>
             tEncoder.value(discriminator).write(t) match {
               case JsObject(fields) =>
@@ -97,7 +99,8 @@ object MkJsonFormat extends LowPriority {
   implicit def hlistEncoder1[K <: Symbol, H, T <: HList](implicit
       witness: Witness.Aux[K],
       hEncoder: Lazy[JsonFormat[H]],
-      tEncoder: MkJsonFormat[T]
+      tEncoder: MkJsonFormat[T],
+      configuration: Configuration
   ): MkJsonFormat[FieldType[K, H] :: T] =
     new MkJsonFormat[FieldType[K, H] :: T](discriminator =>
       new JsonFormat[FieldType[K, H] :: T] {
@@ -106,7 +109,8 @@ object MkJsonFormat extends LowPriority {
             .value(discriminator)
             .read(json)
         override def write(obj: FieldType[K, H] :: T): JsValue = obj match {
-          case h :: t if h.isInstanceOf[None.type] => tEncoder.value(discriminator).write(t)
+          case h :: t if h.isInstanceOf[None.type] && !configuration.renderNullOptions =>
+            tEncoder.value(discriminator).write(t)
           case h :: t =>
             tEncoder.value(discriminator).write(t) match {
               case JsObject(fields) => JsObject(fields + (witness.value.name -> hEncoder.value.write(h)))
@@ -118,7 +122,8 @@ object MkJsonFormat extends LowPriority {
 
   implicit def genericEncoder[T, Repr](implicit
       gen: LabelledGeneric.Aux[T, Repr],
-      rEncoder: Lazy[MkJsonFormat[Repr]]
+      rEncoder: Lazy[MkJsonFormat[Repr]],
+      configuration: Configuration
   ): MkJsonFormat[T] = {
     new MkJsonFormat[T](discriminator =>
       new JsonFormat[T] {
@@ -135,3 +140,5 @@ case class Discriminator(name: String) extends scala.annotation.StaticAnnotation
 object Discriminator {
   val default: Discriminator = Discriminator("type")
 }
+
+case class Configuration(renderNullOptions: Boolean)

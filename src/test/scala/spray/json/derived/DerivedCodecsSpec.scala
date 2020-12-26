@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-package spray
-package json
-package derived
+package spray.json.derived
 
 import org.scalacheck.{Arbitrary, Gen, ScalacheckShapeless}
 import org.scalactic.TypeCheckedTripleEquals
@@ -24,6 +22,7 @@ import org.scalatest.Assertion
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
+import spray.json._
 
 class DerivedCodecsSpec
     extends AnyFeatureSpec
@@ -165,6 +164,14 @@ class DerivedCodecsSpec
       Dog(toy = None).toJson.compactPrint should ===("""{}""")
 
       checkRoundtrip[Dog](Dog(None), """{}""")
+    }
+
+    Scenario("option values render nulls") {
+      new derived.WithConfiguration {
+        implicit val configuration: Configuration = Configuration(renderNullOptions = true)
+        case class Dog(toy: Option[String])
+        Dog(toy = None).toJson.compactPrint should ===("""{"toy":null}""")
+      }
     }
   }
 
