@@ -14,7 +14,9 @@
  * limitations under the License.
  */
 
-package spray.json.derived
+package spray
+package json
+package derived
 
 import org.scalacheck.{Arbitrary, Gen, ScalacheckShapeless}
 import org.scalactic.TypeCheckedTripleEquals
@@ -22,7 +24,6 @@ import org.scalatest.Assertion
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
-import spray.json._
 
 class DerivedCodecsSpec
     extends AnyFeatureSpec
@@ -30,7 +31,6 @@ class DerivedCodecsSpec
     with ScalacheckShapeless
     with Matchers
     with TypeCheckedTripleEquals
-    with Instances
     with DefaultJsonProtocol {
 
   implicit val arbitraryString: Arbitrary[String] = Arbitrary(Gen.alphaNumStr)
@@ -96,21 +96,53 @@ class DerivedCodecsSpec
       }
     }
 
-    Scenario("recursive types") {
+    Scenario("recursive types #1") {
       sealed trait Tree
       case class Leaf(s: String)            extends Tree
       case class Node(lhs: Tree, rhs: Tree) extends Tree
 
-      pending
-//      forAll { tree: Leaf =>
-//        checkRoundtrip[Tree](
-//          tree,
-//          s"""{"type": "Leaf", "s": "${tree.s}"}"""
-//        )
-//      }
+      forAll { tree: Leaf =>
+        checkRoundtrip[Tree](
+          tree,
+          s"""{"type": "Leaf", "s": "${tree.s}"}"""
+        )
+      }
+      checkRoundtrip[Tree](
+        Node(Node(Leaf("1"), Leaf("2")), Leaf("3")),
+        s"""{
+           |  "lhs": {
+           |    "lhs": {
+           |      "s": "1",
+           |      "type": "Leaf"
+           |    },
+           |    "rhs": {
+           |      "s": "2",
+           |      "type": "Leaf"
+           |    },
+           |    "type": "Node"
+           |  },
+           |  "rhs": {
+           |    "s": "3",
+           |    "type": "Leaf"
+           |  },
+           |  "type": "Node"
+           |}
+           |""".stripMargin
+      )
     }
 
-    Scenario("polylmorphic types") {
+    Scenario("recursive types #2") {
+      sealed trait AList[+T]
+      case object ANil                             extends AList[Nothing]
+      case class ACons[T](head: T, tail: AList[T]) extends AList[T]
+
+      checkRoundtrip[AList[Int]](
+        ACons(1, ACons(2, ANil)),
+        """{"head":1,"tail":{"head":2,"tail":{"type":"ANil"},"type":"ACons"},"type":"ACons"}"""
+      )
+    }
+
+    Scenario("polymorphic types") {
       case class Quux[A](value: A)
       forAll { quux: Quux[String] =>
         checkRoundtrip[Quux[String]](
