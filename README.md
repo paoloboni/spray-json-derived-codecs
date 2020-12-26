@@ -18,7 +18,7 @@ The derivation currently supports:
 If you use sbt add the following dependency to your build file:
 
 ```sbtshell
-libraryDependencies += "io.github.paoloboni" %% "spray-json-derived-codecs" % "<version>"
+libraryDependencies += "io.github.paoloboni" %% "spray-json-derived-codecs" % "2.1.0"
 ```
 
 ## Usage
