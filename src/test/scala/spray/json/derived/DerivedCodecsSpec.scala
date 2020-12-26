@@ -157,6 +157,15 @@ class DerivedCodecsSpec
         )
       }
     }
+
+    Scenario("option values default rendering") {
+      case class Dog(toy: Option[String])
+
+      checkRoundtrip[Dog](Dog(Some("ball")), """{"toy": "ball"}""")
+      Dog(toy = None).toJson.compactPrint should ===("""{}""")
+
+      checkRoundtrip[Dog](Dog(None), """{}""")
+    }
   }
 
   def checkRoundtrip[A: JsonFormat](a: A, expectedJson: String): Assertion = {

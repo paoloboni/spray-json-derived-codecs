@@ -24,23 +24,27 @@ import shapeless.labelled.{FieldType, field}
 class MkJsonFormat[T](val value: Discriminator => JsonFormat[T]) extends AnyVal
 
 trait LowPriority {
-  implicit def hlistEncoder1[K <: Symbol, H, T <: HList](implicit
+  implicit def hlistEncoder0[K <: Symbol, H, T <: HList, R](implicit
       witness: Witness.Aux[K],
-      hEncoder: Lazy[JsonFormat[H]],
+      gen: LabelledGeneric.Aux[H, R],
+      hEncoder: Lazy[MkJsonFormat[R]],
       tEncoder: MkJsonFormat[T]
   ): MkJsonFormat[FieldType[K, H] :: T] =
     new MkJsonFormat[FieldType[K, H] :: T](discriminator =>
       new JsonFormat[FieldType[K, H] :: T] {
         override def read(json: JsValue): FieldType[K, H] :: T =
-          field[K](hEncoder.value.read(json.asJsObject.fields(witness.value.name))) :: tEncoder
+          field[K](
+            gen.from(hEncoder.value.value(discriminator).read(json.asJsObject.fields(witness.value.name)))
+          ) :: tEncoder
             .value(discriminator)
             .read(json)
         override def write(obj: FieldType[K, H] :: T): JsValue = obj match {
           case h :: t if h.isInstanceOf[None.type] => tEncoder.value(discriminator).write(t)
           case h :: t =>
             tEncoder.value(discriminator).write(t) match {
-              case JsObject(fields) => JsObject(fields + (witness.value.name -> hEncoder.value.write(h)))
-              case _                => throw new Exception("impossible")
+              case JsObject(fields) =>
+                JsObject(fields + (witness.value.name -> hEncoder.value.value(discriminator).write(gen.to(h))))
+              case _ => throw new Exception("impossible")
             }
         }
       }
@@ -90,27 +94,23 @@ object MkJsonFormat extends LowPriority {
       }
     )
 
-  implicit def hlistEncoder0[K <: Symbol, H, T <: HList, R](implicit
+  implicit def hlistEncoder1[K <: Symbol, H, T <: HList](implicit
       witness: Witness.Aux[K],
-      gen: LabelledGeneric.Aux[H, R],
-      hEncoder: Lazy[MkJsonFormat[R]],
+      hEncoder: Lazy[JsonFormat[H]],
       tEncoder: MkJsonFormat[T]
   ): MkJsonFormat[FieldType[K, H] :: T] =
     new MkJsonFormat[FieldType[K, H] :: T](discriminator =>
       new JsonFormat[FieldType[K, H] :: T] {
         override def read(json: JsValue): FieldType[K, H] :: T =
-          field[K](
-            gen.from(hEncoder.value.value(discriminator).read(json.asJsObject.fields(witness.value.name)))
-          ) :: tEncoder
+          field[K](hEncoder.value.read(json.asJsObject.fields.getOrElse(witness.value.name, JsNull))) :: tEncoder
             .value(discriminator)
             .read(json)
         override def write(obj: FieldType[K, H] :: T): JsValue = obj match {
           case h :: t if h.isInstanceOf[None.type] => tEncoder.value(discriminator).write(t)
           case h :: t =>
             tEncoder.value(discriminator).write(t) match {
-              case JsObject(fields) =>
-                JsObject(fields + (witness.value.name -> hEncoder.value.value(discriminator).write(gen.to(h))))
-              case _ => throw new Exception("impossible")
+              case JsObject(fields) => JsObject(fields + (witness.value.name -> hEncoder.value.write(h)))
+              case _                => throw new Exception("impossible")
             }
         }
       }
