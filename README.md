@@ -18,24 +18,32 @@ The derivation currently supports:
 If you use sbt add the following dependency to your build file:
 
 ```sbtshell
-libraryDependencies += "io.github.paoloboni" %% "spray-json-derived-codecs" % "2.1.0"
+libraryDependencies += "io.github.paoloboni" %% "spray-json-derived-codecs" % "2.2.0"
 ```
 
 ## Usage
 
-Add the following import to enable the automatic derivation of the formats:
+For automatic derivation, add the following import:
 
 ```scala
-import spray.json.derived._
+import spray.json.derived.auto._
+```
+
+If you prefer to explicitly define your formats, then you can use semi-auto derivation:
+
+```scala
+import spray.json.derived.semiauto._
 ```
 
 ### Examples
 
 #### Product types
 
+##### Auto derivation
+
 ```scala
 import spray.json._
-import spray.json.derived._
+import spray.json.derived.auto._
 
 case class Cat(name: String, livesLeft: Int)
 
@@ -48,13 +56,32 @@ object Test extends App with DefaultJsonProtocol {
 }
 ```
 
+##### Semi-auto derivation
+
+```scala
+import spray.json._
+import spray.json.derived.semiauto._
+
+case class Cat(name: String, livesLeft: Int)
+
+object Test extends App with DefaultJsonProtocol {
+  implicit val format: JsonFormat[Cat] = deriveFormat[Cat]
+
+  val oliver: Cat = Cat("Oliver", 7)
+  val encoded     = oliver.toJson
+
+  assert(encoded == """{"livesLeft":7,"name":"Oliver"}""".parseJson)
+  assert(encoded.convertTo[Cat] == oliver)
+}
+```
+
 #### Union types
 
 Union types are encoded by using a discriminator field, which by default is `type`.
 
 ```scala
 import spray.json._
-import spray.json.derived._
+import spray.json.derived.auto._
 
 sealed trait Pet
 case class Cat(name: String, livesLeft: Int)   extends Pet
@@ -77,7 +104,8 @@ The discriminator can be customised by annotating the union type with the `@Disc
 
 ```scala
 import spray.json._
-import spray.json.derived._
+import spray.json.derived.auto._
+import spray.json.derived.Discriminator
 
 @Discriminator("petType")
 sealed trait Pet
@@ -96,7 +124,7 @@ object Test extends App with DefaultJsonProtocol {
 
 ```scala
 import spray.json._
-import spray.json.derived._
+import spray.json.derived.auto._
 
 sealed trait Tree
 case class Leaf(s: String)            extends Tree
@@ -135,7 +163,7 @@ object Test extends App with DefaultJsonProtocol {
 
 ```scala
 import spray.json._
-import spray.json.derived._
+import spray.json.derived.auto._
 
 case class Container[T](value: T)
 
@@ -159,7 +187,7 @@ By default, undefined optional members are not rendered:
 
 ```scala
 import spray.json._
-import spray.json.derived._
+import spray.json.derived.auto._
 
 case class Dog(toy: Option[String])
 
@@ -175,7 +203,8 @@ Use the mixin `derived.WithConfiguration` and specify the alternative configurat
 
 ```scala
 import spray.json._
-import spray.json.derived._
+import spray.json.derived.auto._
+import spray.json.derived.Configuration
 
 case class Dog(toy: Option[String])
 
