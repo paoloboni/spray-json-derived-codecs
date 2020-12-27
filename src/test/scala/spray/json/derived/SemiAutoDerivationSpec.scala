@@ -14,21 +14,21 @@
  * limitations under the License.
  */
 
-package spray.json
+package spray.json.derived
 
-import shapeless.Annotation
+import org.scalatest.featurespec.AnyFeatureSpec
+import org.scalatest.matchers.should.Matchers
+import spray.json._
+import spray.json.derived.semiauto._
 
-package object derived extends WithConfiguration {
-  object auto {
-    implicit def deriveFormat[T](implicit
-        mk: MkJsonFormat[T],
-        discriminator: Annotation[Option[Discriminator], T]
-    ): JsonFormat[T] = mk.value(discriminator().getOrElse(Discriminator.default))
-  }
-  object semiauto {
-    def deriveFormat[T](implicit
-        mk: MkJsonFormat[T],
-        discriminator: Annotation[Option[Discriminator], T]
-    ): JsonFormat[T] = mk.value(discriminator().getOrElse(Discriminator.default))
+class SemiAutoDerivationSpec extends AnyFeatureSpec with Matchers with CheckRoundTrip with DefaultJsonProtocol {
+  Feature("semi-automatic derivation") {
+    Scenario("explicitly define formats") {
+      case class Cat(name: String, livesLeft: Int)
+
+      implicit val format: JsonFormat[Cat] = deriveFormat[Cat]
+
+      checkRoundTrip(Cat("Oliver", 7), """{"livesLeft":7,"name":"Oliver"}""")
+    }
   }
 }

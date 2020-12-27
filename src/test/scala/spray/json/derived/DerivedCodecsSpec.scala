@@ -18,11 +18,11 @@ package spray.json.derived
 
 import org.scalacheck.{Arbitrary, Gen, ScalacheckShapeless}
 import org.scalactic.TypeCheckedTripleEquals
-import org.scalatest.Assertion
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import spray.json._
+import spray.json.derived.auto._
 
 class DerivedCodecsSpec
     extends AnyFeatureSpec
@@ -30,7 +30,8 @@ class DerivedCodecsSpec
     with ScalacheckShapeless
     with Matchers
     with TypeCheckedTripleEquals
-    with DefaultJsonProtocol {
+    with DefaultJsonProtocol
+    with CheckRoundTrip {
 
   implicit val arbitraryString: Arbitrary[String] = Arbitrary(Gen.alphaNumStr)
 
@@ -39,7 +40,7 @@ class DerivedCodecsSpec
     Scenario("product type") {
       case class Cat(name: String, livesLeft: Int)
       forAll { cat: Cat =>
-        checkRoundtrip[Cat](
+        checkRoundTrip[Cat](
           cat,
           s"""{"name": "${cat.name}", "livesLeft": ${cat.livesLeft}}"""
         )
@@ -49,7 +50,7 @@ class DerivedCodecsSpec
     Scenario("tuple type") {
       type Cat = (String, Int)
       forAll { cat: Cat =>
-        checkRoundtrip[Cat](
+        checkRoundTrip[Cat](
           cat,
           s"""["${cat._1}", ${cat._2}]"""
         )
@@ -62,13 +63,13 @@ class DerivedCodecsSpec
       case class Dog(name: String, bonesHidden: Int) extends Animal
 
       forAll { animal: Cat =>
-        checkRoundtrip[Animal](
+        checkRoundTrip[Animal](
           animal,
           s"""{"type": "Cat", "name": "${animal.name}", "livesLeft": ${animal.livesLeft}}"""
         )
       }
       forAll { animal: Dog =>
-        checkRoundtrip[Animal](
+        checkRoundTrip[Animal](
           animal,
           s"""{"type": "Dog", "name": "${animal.name}", "bonesHidden": ${animal.bonesHidden}}"""
         )
@@ -82,13 +83,13 @@ class DerivedCodecsSpec
       case class Dog(name: String, bonesHidden: Int) extends Animal
 
       forAll { animal: Cat =>
-        checkRoundtrip[Animal](
+        checkRoundTrip[Animal](
           animal,
           s"""{"animalType": "Cat", "name": "${animal.name}", "livesLeft": ${animal.livesLeft}}"""
         )
       }
       forAll { animal: Dog =>
-        checkRoundtrip[Animal](
+        checkRoundTrip[Animal](
           animal,
           s"""{"animalType": "Dog", "name": "${animal.name}", "bonesHidden": ${animal.bonesHidden}}"""
         )
@@ -101,12 +102,12 @@ class DerivedCodecsSpec
       case class Node(lhs: Tree, rhs: Tree) extends Tree
 
       forAll { tree: Leaf =>
-        checkRoundtrip[Tree](
+        checkRoundTrip[Tree](
           tree,
           s"""{"type": "Leaf", "s": "${tree.s}"}"""
         )
       }
-      checkRoundtrip[Tree](
+      checkRoundTrip[Tree](
         Node(Node(Leaf("1"), Leaf("2")), Leaf("3")),
         s"""{
            |  "lhs": {
@@ -135,7 +136,7 @@ class DerivedCodecsSpec
       case object ANil                             extends AList[Nothing]
       case class ACons[T](head: T, tail: AList[T]) extends AList[T]
 
-      checkRoundtrip[AList[Int]](
+      checkRoundTrip[AList[Int]](
         ACons(1, ACons(2, ANil)),
         """{"head":1,"tail":{"head":2,"tail":{"type":"ANil"},"type":"ACons"},"type":"ACons"}"""
       )
@@ -144,13 +145,13 @@ class DerivedCodecsSpec
     Scenario("polymorphic types") {
       case class Quux[A](value: A)
       forAll { quux: Quux[String] =>
-        checkRoundtrip[Quux[String]](
+        checkRoundTrip[Quux[String]](
           quux,
           s"""{"value": "${quux.value}"}"""
         )
       }
       forAll { quux: Quux[Int] =>
-        checkRoundtrip[Quux[Int]](
+        checkRoundTrip[Quux[Int]](
           quux,
           s"""{"value": ${quux.value}}"""
         )
@@ -160,10 +161,10 @@ class DerivedCodecsSpec
     Scenario("option values default rendering") {
       case class Dog(toy: Option[String])
 
-      checkRoundtrip[Dog](Dog(Some("ball")), """{"toy": "ball"}""")
+      checkRoundTrip[Dog](Dog(Some("ball")), """{"toy": "ball"}""")
       Dog(toy = None).toJson.compactPrint should ===("""{}""")
 
-      checkRoundtrip[Dog](Dog(None), """{}""")
+      checkRoundTrip[Dog](Dog(None), """{}""")
     }
 
     Scenario("option values render nulls") {
@@ -173,11 +174,5 @@ class DerivedCodecsSpec
         Dog(toy = None).toJson.compactPrint should ===("""{"toy":null}""")
       }
     }
-  }
-
-  def checkRoundtrip[A: JsonFormat](a: A, expectedJson: String): Assertion = {
-    val parsed: JsValue = expectedJson.parseJson
-    a.toJson should ===(parsed)
-    parsed.convertTo[A] should ===(a)
   }
 }

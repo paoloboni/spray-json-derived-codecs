@@ -14,21 +14,16 @@
  * limitations under the License.
  */
 
-package spray.json
+package spray.json.derived
 
-import shapeless.Annotation
+import org.scalatest.Assertion
+import org.scalatest.matchers.should.Matchers
+import spray.json.{JsValue, JsonFormat, _}
 
-package object derived extends WithConfiguration {
-  object auto {
-    implicit def deriveFormat[T](implicit
-        mk: MkJsonFormat[T],
-        discriminator: Annotation[Option[Discriminator], T]
-    ): JsonFormat[T] = mk.value(discriminator().getOrElse(Discriminator.default))
-  }
-  object semiauto {
-    def deriveFormat[T](implicit
-        mk: MkJsonFormat[T],
-        discriminator: Annotation[Option[Discriminator], T]
-    ): JsonFormat[T] = mk.value(discriminator().getOrElse(Discriminator.default))
+trait CheckRoundTrip { self: Matchers =>
+  def checkRoundTrip[A: JsonFormat](a: A, expectedJson: String): Assertion = {
+    val parsed: JsValue = expectedJson.parseJson
+    a.toJson should ===(parsed)
+    parsed.convertTo[A] should ===(a)
   }
 }
