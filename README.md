@@ -5,13 +5,15 @@
 [![codecov.io](http://codecov.io/github/paoloboni/spray-json-derived-codecs/coverage.svg?branch=master)](http://codecov.io/github/paoloboni/spray-json-derived-codecs?branch=master)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
-A library to derive `JsonFormat[T]` instances for `T`.
+`JsonFormat` derivation for algebraic data types, inspired by [Play Json Derived Codecs](https://github.com/julienrf/play-json-derived-codecs) and powered by [shapeless](https://github.com/milessabin/shapeless).
 
 The derivation currently supports:
 - sum types
 - product types
 - recursive types
 - polymorphic types
+
+This library is built with Sbt 1.4.4 or later, and its master branch is built with Scala 2.13.4 by default but also cross-builds for 2.11.12 and 2.12.12.
 
 ## Installation
 
@@ -44,10 +46,11 @@ import spray.json.derived.semiauto._
 ```scala
 import spray.json._
 import spray.json.derived.auto._
+import spray.json.DefaultJsonProtocol._
 
 case class Cat(name: String, livesLeft: Int)
 
-object Test extends App with DefaultJsonProtocol {
+object Test extends App {
   val oliver: Cat = Cat("Oliver", 7)
   val encoded     = oliver.toJson
   
@@ -61,10 +64,11 @@ object Test extends App with DefaultJsonProtocol {
 ```scala
 import spray.json._
 import spray.json.derived.semiauto._
+import spray.json.DefaultJsonProtocol._
 
 case class Cat(name: String, livesLeft: Int)
 
-object Test extends App with DefaultJsonProtocol {
+object Test extends App {
   implicit val format: JsonFormat[Cat] = deriveFormat[Cat]
 
   val oliver: Cat = Cat("Oliver", 7)
@@ -82,12 +86,13 @@ Union types are encoded by using a discriminator field, which by default is `typ
 ```scala
 import spray.json._
 import spray.json.derived.auto._
+import spray.json.DefaultJsonProtocol._
 
 sealed trait Pet
 case class Cat(name: String, livesLeft: Int)   extends Pet
 case class Dog(name: String, bonesHidden: Int) extends Pet
 
-object Test extends App with DefaultJsonProtocol {
+object Test extends App {
   val oliver: Pet   = Cat("Oliver", 7)
   val encodedOliver = oliver.toJson
   assert(encodedOliver == """{"livesLeft":7,"name":"Oliver","type":"Cat"}""".parseJson)
@@ -105,6 +110,7 @@ The discriminator can be customised by annotating the union type with the `@Disc
 ```scala
 import spray.json._
 import spray.json.derived.auto._
+import spray.json.DefaultJsonProtocol._
 import spray.json.derived.Discriminator
 
 @Discriminator("petType")
@@ -112,7 +118,7 @@ sealed trait Pet
 case class Cat(name: String, livesLeft: Int)   extends Pet
 case class Dog(name: String, bonesHidden: Int) extends Pet
 
-object Test extends App with DefaultJsonProtocol {
+object Test extends App {
   val oliver: Pet   = Cat("Oliver", 7)
   val encodedOliver = oliver.toJson
   assert(encodedOliver == """{"livesLeft":7,"name":"Oliver","petType":"Cat"}""".parseJson)
@@ -125,12 +131,13 @@ object Test extends App with DefaultJsonProtocol {
 ```scala
 import spray.json._
 import spray.json.derived.auto._
+import spray.json.DefaultJsonProtocol._
 
 sealed trait Tree
 case class Leaf(s: String)            extends Tree
 case class Node(lhs: Tree, rhs: Tree) extends Tree
 
-object Test extends App with DefaultJsonProtocol {
+object Test extends App {
 
   val obj: Tree = Node(Node(Leaf("1"), Leaf("2")), Leaf("3"))
   val encoded   = obj.toJson
@@ -164,10 +171,11 @@ object Test extends App with DefaultJsonProtocol {
 ```scala
 import spray.json._
 import spray.json.derived.auto._
+import spray.json.DefaultJsonProtocol._
 
 case class Container[T](value: T)
 
-object Test extends App with DefaultJsonProtocol {
+object Test extends App {
 
   val cString: Container[String] = Container("abc")
   val cStringEncoded             = cString.toJson
@@ -188,10 +196,11 @@ By default, undefined optional members are not rendered:
 ```scala
 import spray.json._
 import spray.json.derived.auto._
+import spray.json.DefaultJsonProtocol._
 
 case class Dog(toy: Option[String])
 
-object Test extends App with DefaultJsonProtocol {
+object Test extends App {
   val aDog        = Dog(toy = None)
   val aDogEncoded = aDog.toJson
   assert(aDogEncoded.compactPrint == "{}")
@@ -199,16 +208,17 @@ object Test extends App with DefaultJsonProtocol {
 ```
 
 It's possible to render undefined optional members as null values by specifying an alternative configuration.
-Use the mixin `derived.WithConfiguration` and specify the alternative configuration as implicit value:
+Just specify the alternative configuration as implicit value and enable the `renderNullOptions` flag:
 
 ```scala
 import spray.json._
-import spray.json.derived.auto._
 import spray.json.derived.Configuration
+import spray.json.derived.auto._
+import spray.json.DefaultJsonProtocol._
 
 case class Dog(toy: Option[String])
 
-object Test extends App with DefaultJsonProtocol with derived.WithConfiguration {
+object Test extends App {
 
   implicit val conf: Configuration = Configuration(renderNullOptions = true)
 
