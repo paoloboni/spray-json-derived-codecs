@@ -21,6 +21,9 @@ package derived
 import shapeless._
 import shapeless.labelled.{FieldType, field}
 
+import scala.annotation.implicitNotFound
+
+@implicitNotFound("Cannot derive instance JsonFormat[${T}]")
 class MkJsonFormat[T](val value: Discriminator => JsonFormat[T]) extends AnyVal
 
 trait LowPriority {

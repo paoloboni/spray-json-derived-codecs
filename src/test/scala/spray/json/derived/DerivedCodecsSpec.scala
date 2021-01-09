@@ -22,7 +22,6 @@ import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import spray.json._
-import spray.json.derived.auto._
 
 class DerivedCodecsSpec
     extends AnyFeatureSpec
@@ -30,7 +29,6 @@ class DerivedCodecsSpec
     with ScalacheckShapeless
     with Matchers
     with TypeCheckedTripleEquals
-    with DefaultJsonProtocol
     with CheckRoundTrip {
 
   implicit val arbitraryString: Arbitrary[String] = Arbitrary(Gen.alphaNumStr)
@@ -38,6 +36,9 @@ class DerivedCodecsSpec
   Feature("encoding andThen decoding = identity") {
 
     Scenario("product type") {
+      import spray.json.DefaultJsonProtocol._
+      import spray.json.derived.auto._
+
       case class Cat(name: String, livesLeft: Int)
       forAll { cat: Cat =>
         checkRoundTrip[Cat](
@@ -48,6 +49,9 @@ class DerivedCodecsSpec
     }
 
     Scenario("tuple type") {
+      import spray.json.DefaultJsonProtocol._
+      import spray.json.derived.auto._
+
       type Cat = (String, Int)
       forAll { cat: Cat =>
         checkRoundTrip[Cat](
@@ -58,6 +62,9 @@ class DerivedCodecsSpec
     }
 
     Scenario("sum types") {
+      import spray.json.DefaultJsonProtocol._
+      import spray.json.derived.auto._
+
       sealed trait Animal
       case class Cat(name: String, livesLeft: Int)   extends Animal
       case class Dog(name: String, bonesHidden: Int) extends Animal
@@ -77,6 +84,9 @@ class DerivedCodecsSpec
     }
 
     Scenario("sum types with discriminator") {
+      import spray.json.DefaultJsonProtocol._
+      import spray.json.derived.auto._
+
       @Discriminator("animalType")
       sealed trait Animal
       case class Cat(name: String, livesLeft: Int)   extends Animal
@@ -97,6 +107,9 @@ class DerivedCodecsSpec
     }
 
     Scenario("recursive types #1") {
+      import spray.json.DefaultJsonProtocol._
+      import spray.json.derived.auto._
+
       sealed trait Tree
       case class Leaf(s: String)            extends Tree
       case class Node(lhs: Tree, rhs: Tree) extends Tree
@@ -132,6 +145,9 @@ class DerivedCodecsSpec
     }
 
     Scenario("recursive types #2") {
+      import spray.json.DefaultJsonProtocol._
+      import spray.json.derived.auto._
+
       sealed trait AList[+T]
       case object ANil                             extends AList[Nothing]
       case class ACons[T](head: T, tail: AList[T]) extends AList[T]
@@ -143,6 +159,9 @@ class DerivedCodecsSpec
     }
 
     Scenario("polymorphic types") {
+      import spray.json.DefaultJsonProtocol._
+      import spray.json.derived.auto._
+
       case class Quux[A](value: A)
       forAll { quux: Quux[String] =>
         checkRoundTrip[Quux[String]](
@@ -159,6 +178,9 @@ class DerivedCodecsSpec
     }
 
     Scenario("option values default rendering") {
+      import spray.json.DefaultJsonProtocol._
+      import spray.json.derived.auto._
+
       case class Dog(toy: Option[String])
 
       checkRoundTrip[Dog](Dog(Some("ball")), """{"toy": "ball"}""")
@@ -168,11 +190,36 @@ class DerivedCodecsSpec
     }
 
     Scenario("option values render nulls") {
+      import spray.json.DefaultJsonProtocol._
+      import spray.json.derived.auto._
+
       new derived.WithConfiguration {
         implicit val configuration: Configuration = Configuration(renderNullOptions = true)
         case class Dog(toy: Option[String])
         Dog(toy = None).toJson.compactPrint should ===("""{"toy":null}""")
       }
+    }
+
+    Scenario("semi-auto derivation") {
+      import spray.json.DefaultJsonProtocol._
+      import spray.json.derived.semiauto._
+
+      case class Cat(name: String, livesLeft: Int)
+
+      implicit val format: JsonFormat[Cat] = deriveFormat[Cat]
+
+      checkRoundTrip(Cat("Oliver", 7), """{"livesLeft":7,"name":"Oliver"}""")
+    }
+
+    Scenario("compiler error on derivation failure") {
+      import spray.json.derived.semiauto._
+
+      case class Cat(name: String, livesLeft: Int)
+
+      shapeless.test.illTyped(
+        "implicit val format: JsonFormat[Cat] = deriveFormat[Cat]",
+        "Cannot derive instance JsonFormat\\[Cat\\]"
+      )
     }
   }
 }
