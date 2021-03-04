@@ -20,7 +20,7 @@ This library is built with Sbt 1.4.4 or later, and its master branch is built wi
 If you use sbt add the following dependency to your build file:
 
 ```sbtshell
-libraryDependencies += "io.github.paoloboni" %% "spray-json-derived-codecs" % "2.2.1"
+libraryDependencies += "io.github.paoloboni" %% "spray-json-derived-codecs" % "2.2.2"
 ```
 
 ## Usage
