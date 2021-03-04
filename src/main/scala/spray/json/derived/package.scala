@@ -18,17 +18,29 @@ package spray.json
 
 import shapeless.Annotation
 
+import scala.reflect.ClassTag
+
 package object derived extends WithConfiguration {
   object auto {
-    implicit def deriveFormat[T](implicit
+    implicit def deriveFormat[T: ClassTag](implicit
         mk: MkJsonFormat[T],
         discriminator: Annotation[Option[Discriminator], T]
-    ): JsonFormat[T] = mk.value(discriminator().getOrElse(Discriminator.default))
+    ): JsonFormat[T] = mk.value(
+      Context(
+        discriminator = discriminator().getOrElse(Discriminator.default),
+        typeName = implicitly[ClassTag[T]].toString()
+      )
+    )
   }
   object semiauto {
-    def deriveFormat[T](implicit
+    def deriveFormat[T: ClassTag](implicit
         mk: MkJsonFormat[T],
         discriminator: Annotation[Option[Discriminator], T]
-    ): JsonFormat[T] = mk.value(discriminator().getOrElse(Discriminator.default))
+    ): JsonFormat[T] = mk.value(
+      Context(
+        discriminator = discriminator().getOrElse(Discriminator.default),
+        typeName = implicitly[ClassTag[T]].toString()
+      )
+    )
   }
 }

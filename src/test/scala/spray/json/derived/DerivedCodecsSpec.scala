@@ -23,6 +23,8 @@ import org.scalatest.matchers.should.Matchers
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import spray.json._
 
+import scala.reflect.ClassTag
+
 class DerivedCodecsSpec
     extends AnyFeatureSpec
     with ScalaCheckDrivenPropertyChecks
@@ -103,6 +105,41 @@ class DerivedCodecsSpec
           animal,
           s"""{"animalType": "Dog", "name": "${animal.name}", "bonesHidden": ${animal.bonesHidden}}"""
         )
+      }
+    }
+
+    Scenario("sum types when discriminator indicates non-existing type") {
+      import spray.json.DefaultJsonProtocol._
+      import spray.json.derived.auto._
+
+      sealed trait Animal
+      case class Cat(name: String, livesLeft: Int) extends Animal
+
+      forAll { `type`: String =>
+        whenever(`type` != "Cat") {
+          val ex = intercept[DeserializationException](s"""{"type": "${`type`}"}""".parseJson.convertTo[Animal])
+          ex.getMessage should ===(
+            s"""failed to decode ${implicitly[ClassTag[Animal]].toString()}: type="${`type`}" is not defined"""
+          )
+        }
+      }
+    }
+
+    Scenario("sum types when discriminator not found") {
+      import spray.json.DefaultJsonProtocol._
+      import spray.json.derived.auto._
+
+      sealed trait Animal
+      case class Cat(name: String, livesLeft: Int) extends Animal
+
+      forAll { discriminator: String =>
+        whenever(discriminator != "type") {
+          val ex =
+            intercept[DeserializationException](s"""{"$discriminator": "any"}""".parseJson.convertTo[Animal])
+          ex.getMessage should ===(
+            s"""Failed to decode ${implicitly[ClassTag[Animal]].toString()}: discriminator "type" not found"""
+          )
+        }
       }
     }
 

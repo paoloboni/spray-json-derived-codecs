@@ -24,7 +24,7 @@ import shapeless.labelled.{FieldType, field}
 import scala.annotation.implicitNotFound
 
 @implicitNotFound("Cannot derive instance JsonFormat[${T}]")
-class MkJsonFormat[T](val value: Discriminator => JsonFormat[T]) extends AnyVal
+class MkJsonFormat[T](val value: Context => JsonFormat[T]) extends AnyVal
 
 trait LowPriority {
   implicit def hlistEncoder0[K <: Symbol, H, T <: HList, R](implicit
@@ -34,21 +34,21 @@ trait LowPriority {
       tEncoder: MkJsonFormat[T],
       configuration: Configuration
   ): MkJsonFormat[FieldType[K, H] :: T] =
-    new MkJsonFormat[FieldType[K, H] :: T](discriminator =>
+    new MkJsonFormat[FieldType[K, H] :: T](context =>
       new JsonFormat[FieldType[K, H] :: T] {
         override def read(json: JsValue): FieldType[K, H] :: T =
           field[K](
-            gen.from(hEncoder.value.value(discriminator).read(json.asJsObject.fields(witness.value.name)))
+            gen.from(hEncoder.value.value(context).read(json.asJsObject.fields(witness.value.name)))
           ) :: tEncoder
-            .value(discriminator)
+            .value(context)
             .read(json)
         override def write(obj: FieldType[K, H] :: T): JsValue = obj match {
           case h :: t if h.isInstanceOf[None.type] && !configuration.renderNullOptions =>
-            tEncoder.value(discriminator).write(t)
+            tEncoder.value(context).write(t)
           case h :: t =>
-            tEncoder.value(discriminator).write(t) match {
+            tEncoder.value(context).write(t) match {
               case JsObject(fields) =>
-                JsObject(fields + (witness.value.name -> hEncoder.value.value(discriminator).write(gen.to(h))))
+                JsObject(fields + (witness.value.name -> hEncoder.value.value(context).write(gen.to(h))))
               case _ => throw new Exception("impossible")
             }
         }
@@ -60,10 +60,15 @@ object MkJsonFormat extends LowPriority {
   def apply[T](implicit format: MkJsonFormat[T]): MkJsonFormat[T] = format
 
   implicit def cnilInstance: MkJsonFormat[CNil] =
-    new MkJsonFormat[CNil](_ =>
+    new MkJsonFormat[CNil](context =>
       new JsonFormat[CNil] {
         override def write(obj: CNil): JsValue = obj.impossible
-        override def read(json: JsValue): CNil = throw new Exception("impossible")
+        override def read(json: JsValue): CNil = {
+          val discriminatorValue = json.asJsObject.fields(context.discriminator.name).toString()
+          throw DeserializationException(
+            s"failed to decode ${context.typeName}: ${context.discriminator.name}=$discriminatorValue is not defined"
+          )
+        }
       }
     )
 
@@ -72,21 +77,25 @@ object MkJsonFormat extends LowPriority {
       hInstance: Lazy[MkJsonFormat[H]],
       tInstance: MkJsonFormat[T]
   ): MkJsonFormat[FieldType[K, H] :+: T] =
-    new MkJsonFormat[FieldType[K, H] :+: T](discriminator =>
+    new MkJsonFormat[FieldType[K, H] :+: T](context =>
       new JsonFormat[FieldType[K, H] :+: T] {
         override def write(obj: FieldType[K, H] :+: T): JsValue = obj match {
           case Inl(head) =>
             JsObject(
-              hInstance.value.value(discriminator).write(head).asJsObject.fields +
-                (discriminator.name -> JsString(witness.value.name))
+              hInstance.value.value(context).write(head).asJsObject.fields +
+                (context.discriminator.name -> JsString(witness.value.name))
             )
-          case Inr(tail) => tInstance.value(discriminator).write(tail)
+          case Inr(tail) => tInstance.value(context).write(tail)
         }
         override def read(json: JsValue): FieldType[K, H] :+: T =
-          json.asJsObject.fields(discriminator.name) match {
-            case JsString(value) if value == witness.value.name =>
-              Inl(field[K](hInstance.value.value(discriminator).read(json)))
-            case _ => Inr(tInstance.value(discriminator).read(json))
+          json.asJsObject.fields.get(context.discriminator.name) match {
+            case Some(JsString(value)) if value == witness.value.name =>
+              Inl(field[K](hInstance.value.value(context).read(json)))
+            case Some(_) => Inr(tInstance.value(context).read(json))
+            case None =>
+              throw DeserializationException(
+                s"""Failed to decode ${context.typeName}: discriminator "${context.discriminator.name}" not found"""
+              )
           }
       }
     )
@@ -137,6 +146,8 @@ object MkJsonFormat extends LowPriority {
     )
   }
 }
+
+case class Context(discriminator: Discriminator, typeName: String)
 
 case class Discriminator(name: String) extends scala.annotation.StaticAnnotation
 
