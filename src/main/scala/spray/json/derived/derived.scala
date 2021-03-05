@@ -114,17 +114,17 @@ object MkJsonFormat extends LowPriority {
       tEncoder: MkJsonFormat[T],
       configuration: Configuration
   ): MkJsonFormat[FieldType[K, H] :: T] =
-    new MkJsonFormat[FieldType[K, H] :: T](discriminator =>
+    new MkJsonFormat[FieldType[K, H] :: T](context =>
       new JsonFormat[FieldType[K, H] :: T] {
         override def read(json: JsValue): FieldType[K, H] :: T =
           field[K](hEncoder.value.read(json.asJsObject.fields.getOrElse(witness.value.name, JsNull))) :: tEncoder
-            .value(discriminator)
+            .value(context)
             .read(json)
         override def write(obj: FieldType[K, H] :: T): JsValue = obj match {
           case h :: t if h.isInstanceOf[None.type] && !configuration.renderNullOptions =>
-            tEncoder.value(discriminator).write(t)
+            tEncoder.value(context).write(t)
           case h :: t =>
-            tEncoder.value(discriminator).write(t) match {
+            tEncoder.value(context).write(t) match {
               case JsObject(fields) => JsObject(fields + (witness.value.name -> hEncoder.value.write(h)))
               case _                => throw new Exception("impossible")
             }
@@ -137,11 +137,11 @@ object MkJsonFormat extends LowPriority {
       rEncoder: Lazy[MkJsonFormat[Repr]],
       configuration: Configuration
   ): MkJsonFormat[T] = {
-    new MkJsonFormat[T](discriminator =>
+    new MkJsonFormat[T](context =>
       new JsonFormat[T] {
-        override def write(obj: T): JsValue = rEncoder.value.value(discriminator).write(gen.to(obj))
+        override def write(obj: T): JsValue = rEncoder.value.value(context).write(gen.to(obj))
 
-        override def read(json: JsValue): T = gen.from(rEncoder.value.value(discriminator).read(json))
+        override def read(json: JsValue): T = gen.from(rEncoder.value.value(context).read(json))
       }
     )
   }
