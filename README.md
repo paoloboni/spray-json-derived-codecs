@@ -14,7 +14,14 @@ The derivation currently supports:
 - recursive types
 - polymorphic types
 
-This library is built with Sbt 1.4.4 or later, and its master branch is built with Scala 2.13.4 by default but also cross-builds for 2.11.12 and 2.12.12.
+This library is built with Sbt 1.5.1 or later, and its master branch is built with Scala 2.13.5 by default but also cross-builds for 2.11 and 2.12.
+
+---
+**NOTE**
+
+Scala 2.11 is no longer supported. The latest version available for scala 2.11 is 2.2.2.
+
+---
 
 ## Installation
 
