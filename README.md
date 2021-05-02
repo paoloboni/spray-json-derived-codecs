@@ -3,6 +3,7 @@
 [![Build Status](https://travis-ci.com/paoloboni/spray-json-derived-codecs.svg?branch=master)](https://travis-ci.com/paoloboni/spray-json-derived-codecs)
 [![Latest version](https://img.shields.io/maven-central/v/io.github.paoloboni/spray-json-derived-codecs_2.13.svg)](https://search.maven.org/artifact/io.github.paoloboni/spray-json-derived-codecs_2.13)
 [![codecov.io](http://codecov.io/github/paoloboni/spray-json-derived-codecs/coverage.svg?branch=master)](http://codecov.io/github/paoloboni/spray-json-derived-codecs?branch=master)
+[![Scala Steward badge](https://img.shields.io/badge/Scala_Steward-helping-blue.svg?style=flat&logo=data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA4AAAAQCAMAAAARSr4IAAAAVFBMVEUAAACHjojlOy5NWlrKzcYRKjGFjIbp293YycuLa3pYY2LSqql4f3pCUFTgSjNodYRmcXUsPD/NTTbjRS+2jomhgnzNc223cGvZS0HaSD0XLjbaSjElhIr+AAAAAXRSTlMAQObYZgAAAHlJREFUCNdNyosOwyAIhWHAQS1Vt7a77/3fcxxdmv0xwmckutAR1nkm4ggbyEcg/wWmlGLDAA3oL50xi6fk5ffZ3E2E3QfZDCcCN2YtbEWZt+Drc6u6rlqv7Uk0LdKqqr5rk2UCRXOk0vmQKGfc94nOJyQjouF9H/wCc9gECEYfONoAAAAASUVORK5CYII=)](https://scala-steward.org)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 `JsonFormat` derivation for algebraic data types, inspired by [Play Json Derived Codecs](https://github.com/julienrf/play-json-derived-codecs) and powered by [shapeless](https://github.com/milessabin/shapeless).
