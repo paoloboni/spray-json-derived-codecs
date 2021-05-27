@@ -146,13 +146,3 @@ object MkJsonFormat extends LowPriority {
     )
   }
 }
-
-case class Context(discriminator: Discriminator, typeName: String)
-
-case class Discriminator(name: String) extends scala.annotation.StaticAnnotation
-
-object Discriminator {
-  val default: Discriminator = Discriminator("type")
-}
-
-case class Configuration(renderNullOptions: Boolean)

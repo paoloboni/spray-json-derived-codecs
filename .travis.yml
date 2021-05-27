@@ -5,8 +5,9 @@ jdk:
   - openjdk11
 
 scala:
-  - 2.12.13
-  - 2.13.5
+  - 2.12.14
+  - 2.13.6
+  - 3.0.0
 
 script:
   - sbt ++$TRAVIS_SCALA_VERSION scalafmtCheckAll scalafmtSbtCheck headerCheck test:headerCheck coverage test coverageReport

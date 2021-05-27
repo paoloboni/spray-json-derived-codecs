@@ -4,7 +4,8 @@ name := "spray-json-derived-codecs"
 
 lazy val scala212               = "2.12.13"
 lazy val scala213               = "2.13.5"
-lazy val supportedScalaVersions = List(scala212, scala213)
+lazy val scala3                 = "3.0.0"
+lazy val supportedScalaVersions = List(scala212, scala213, scala3)
 
 ThisBuild / scalafmtOnCompile := false
 ThisBuild / organization := "io.github.paoloboni"
@@ -17,12 +18,21 @@ lazy val root = (project in file("."))
     releasePublishArtifactsAction := PgpKeys.publishSigned.value,
     crossScalaVersions := supportedScalaVersions,
     libraryDependencies ++= Seq(
-      sprayJson,
-      shapeless,
-      scalacheckShapeless % Test,
-      scalaTest           % Test,
-      scalacheck          % Test
-    )
+      scalaTest % Test
+    ) ++ (CrossVersion.partialVersion(scalaVersion.value) match {
+      case Some((2, _)) =>
+        Seq(
+          shapeless,
+          sprayJson,
+          scalacheckShapeless % Test,
+          scalacheck_2        % Test
+        )
+      case _ =>
+        Seq(
+          sprayJson.cross(CrossVersion.for3Use2_13),
+          scalacheck_3 % Test
+        )
+    })
   )
   .enablePlugins(AutomateHeaderPlugin)
 
