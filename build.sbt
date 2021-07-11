@@ -8,15 +8,15 @@ lazy val scala3                 = "3.0.0"
 lazy val supportedScalaVersions = List(scala212, scala213, scala3)
 
 ThisBuild / scalafmtOnCompile := false
-ThisBuild / organization := "io.github.paoloboni"
-ThisBuild / startYear := Some(2020)
+ThisBuild / organization      := "io.github.paoloboni"
+ThisBuild / startYear         := Some(2020)
 
 lazy val root = (project in file("."))
   .settings(
-    scalaVersion := scala213,
-    releaseCrossBuild := true,
+    scalaVersion                  := scala213,
+    releaseCrossBuild             := true,
     releasePublishArtifactsAction := PgpKeys.publishSigned.value,
-    crossScalaVersions := supportedScalaVersions,
+    crossScalaVersions            := supportedScalaVersions,
     libraryDependencies ++= Seq(
       scalaTest % Test
     ) ++ (CrossVersion.partialVersion(scalaVersion.value) match {
