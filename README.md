@@ -29,7 +29,7 @@ Scala 2.11 is no longer supported. The latest version available for scala 2.11 i
 If you use sbt add the following dependency to your build file:
 
 ```sbtshell
-libraryDependencies += "io.github.paoloboni" %% "spray-json-derived-codecs" % "2.3.2"
+libraryDependencies += "io.github.paoloboni" %% "spray-json-derived-codecs" % "2.3.3"
 ```
 
 ## Usage
