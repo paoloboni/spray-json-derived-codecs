@@ -22,9 +22,9 @@ jobs:
           - 8
           - 11
         scala:
-          - 2.12.14
+          - 2.12.15
           - 2.13.6
-          - 3.0.0
+          - 3.1.0
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
