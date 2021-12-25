@@ -17,5 +17,5 @@
 package spray.json.derived
 
 enum AList[+T]:
-  case ANil extends AList[Nothing]
+  case ANil                              extends AList[Nothing]
   case ACons[T](head: T, tail: AList[T]) extends AList[T]
