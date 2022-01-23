@@ -7,20 +7,23 @@ on:
       - 'src/**'
       - 'project/**'
       - '**/*.sbt'
+      - '.github/workflows/ci.yml'
   push:
     branches: [master]
     paths:
       - 'src/**'
       - 'project/**'
       - '**/*.sbt'
+      - '.github/workflows/ci.yml'
 jobs:
   test:
     strategy:
       fail-fast: false
       matrix:
         java:
-          - 8
-          - 11
+          - "adopt@1.8"
+          - "openjdk@1.11"
+          - "openjdk@1.17"
         scala:
           - 2.12.15
           - 2.13.8
@@ -28,11 +31,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v1
+        uses: actions/checkout@v2
       - name: Setup
-        uses: olafurpg/setup-scala@v10
+        uses: olafurpg/setup-scala@v11 
         with:
-          java-version: "adopt@1.${{ matrix.java }}"
+          java-version: "${{ matrix.java }}"
       - name: Cache SBT
         uses: actions/cache@v2
         with:
