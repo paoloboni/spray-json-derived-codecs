@@ -3,7 +3,7 @@ import Dependencies._
 name := "spray-json-derived-codecs"
 
 lazy val scala212               = "2.12.15"
-lazy val scala213               = "2.13.7"
+lazy val scala213               = "2.13.8"
 lazy val scala3                 = "3.1.1"
 lazy val supportedScalaVersions = List(scala212, scala213, scala3)
 
