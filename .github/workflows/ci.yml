@@ -21,6 +21,7 @@ jobs:
         java:
           - 8
           - 11
+          - 17
         scala:
           - 2.12.15
           - 2.13.7
@@ -28,11 +29,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v1
+        uses: actions/checkout@v2
       - name: Setup
-        uses: olafurpg/setup-scala@v10
+        uses: actions/setup-scala@v2
         with:
-          java-version: "adopt@1.${{ matrix.java }}"
+          distribution: 'temurin'
+          java-version: "${{ matrix.java }}"
       - name: Cache SBT
         uses: actions/cache@v2
         with:
