@@ -7,12 +7,14 @@ on:
       - 'src/**'
       - 'project/**'
       - '**/*.sbt'
+      - '.github/workflows/ci.yml'
   push:
     branches: [master]
     paths:
       - 'src/**'
       - 'project/**'
       - '**/*.sbt'
+      - '.github/workflows/ci.yml'
 jobs:
   test:
     strategy:
