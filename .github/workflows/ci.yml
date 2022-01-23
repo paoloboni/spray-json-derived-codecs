@@ -33,10 +33,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
       - name: Setup
-        uses: actions/setup-scala@v2
+        uses: olafurpg/setup-scala@v11 
         with:
-          distribution: 'temurin'
-          java-version: "${{ matrix.java }}"
+          java-version: "temurin@${{ matrix.java }}"
       - name: Cache SBT
         uses: actions/cache@v2
         with:
