@@ -34,6 +34,7 @@ lazy val root = (project in file("."))
         )
     })
   )
+  .settings(scalacOptions -= "-Vimplicits")
   .enablePlugins(AutomateHeaderPlugin)
 
 import ReleaseTransformations._

@@ -21,7 +21,7 @@ package derived
 import shapeless._
 import shapeless.labelled.{FieldType, field}
 
-import scala.annotation.implicitNotFound
+import scala.annotation.{implicitNotFound, nowarn}
 
 @implicitNotFound("Cannot derive instance JsonFormat[${T}]")
 class MkJsonFormat[T](val value: Context => JsonFormat[T]) extends AnyVal
@@ -135,7 +135,7 @@ object MkJsonFormat extends LowPriority {
   implicit def genericEncoder[T, Repr](implicit
       gen: LabelledGeneric.Aux[T, Repr],
       rEncoder: Lazy[MkJsonFormat[Repr]],
-      configuration: Configuration
+      @nowarn configuration: Configuration
   ): MkJsonFormat[T] = {
     new MkJsonFormat[T](context =>
       new JsonFormat[T] {
