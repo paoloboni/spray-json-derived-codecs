@@ -2,21 +2,34 @@ import Dependencies._
 
 name := "spray-json-derived-codecs"
 
+inThisBuild(
+  List(
+    organization := "io.github.paoloboni",
+    homepage     := Some(url("https://github.com/paoloboni/spray-json-derived-codecs")),
+    licenses     := List("Apache-2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0")),
+    developers := List(
+      Developer(
+        "paoloboni",
+        "Paolo Boni",
+        "boni.paolo@gmail.com",
+        url("https://github.com/paoloboni")
+      )
+    ),
+    startYear := Some(2020)
+  )
+)
+
 lazy val scala212               = "2.12.15"
 lazy val scala213               = "2.13.8"
 lazy val scala3                 = "3.1.1"
 lazy val supportedScalaVersions = List(scala212, scala213, scala3)
 
 ThisBuild / scalafmtOnCompile := false
-ThisBuild / organization      := "io.github.paoloboni"
-ThisBuild / startYear         := Some(2020)
 
 lazy val root = (project in file("."))
   .settings(
-    scalaVersion                  := scala213,
-    releaseCrossBuild             := true,
-    releasePublishArtifactsAction := PgpKeys.publishSigned.value,
-    crossScalaVersions            := supportedScalaVersions,
+    scalaVersion       := scala213,
+    crossScalaVersions := supportedScalaVersions,
     libraryDependencies ++= Seq(
       scalaTest % Test
     ) ++ (CrossVersion.partialVersion(scalaVersion.value) match {
@@ -36,20 +49,3 @@ lazy val root = (project in file("."))
   )
   .settings(scalacOptions -= "-Vimplicits")
   .enablePlugins(AutomateHeaderPlugin)
-
-import ReleaseTransformations._
-
-releaseProcess := Seq[ReleaseStep](
-  checkSnapshotDependencies,
-  inquireVersions,
-  runClean,
-  runTest,
-  setReleaseVersion,
-  commitReleaseVersion,
-  tagRelease,
-  publishArtifacts,
-  setNextVersion,
-  commitNextVersion,
-  releaseStepCommand("sonatypeReleaseAll"),
-  pushChanges
-)
