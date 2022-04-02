@@ -50,4 +50,5 @@ lazy val root = (project in file("."))
   .settings(scalacOptions -= "-Vimplicits")
   .enablePlugins(AutomateHeaderPlugin)
 
-publishTo := sonatypePublishToBundle.value
+publishTo      := sonatypePublishToBundle.value
+skip / publish := true
