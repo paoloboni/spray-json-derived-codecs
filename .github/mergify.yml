@@ -1,0 +1,17 @@
+pull_request_rules:
+  - name: Automatic merge on approval
+    conditions:
+      - author=github-actions[bot]
+      - title~=^Update\s.*
+      - "status-success=test (adopt@1.8, 2.12.15)"
+      - "status-success=test (adopt@1.8, 2.13.8)"
+      - "status-success=test (adopt@1.8, 3.1.1)"
+      - "status-success=test (openjdk@1.11, 2.12.15)"
+      - "status-success=test (openjdk@1.11, 2.13.8)"
+      - "status-success=test (openjdk@1.11, 3.1.1)"
+      - "status-success=test (openjdk@1.17, 2.12.15)"
+      - "status-success=test (openjdk@1.17, 2.13.8)"
+      - "status-success=test (openjdk@1.17, 3.1.1)"
+    actions:
+      merge:
+        method: squash
