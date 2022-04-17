@@ -5,13 +5,13 @@ on:
     paths:
       - 'src/**'
       - 'project/**'
-      - '**/*.sbt'
+      - '**.sbt'
       - '.github/workflows/ci.yml'
   push:
     paths:
       - 'src/**'
       - 'project/**'
-      - '**/*.sbt'
+      - '**.sbt'
       - '.github/workflows/ci.yml'
 jobs:
   test:
