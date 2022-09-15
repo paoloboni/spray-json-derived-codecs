@@ -1,7 +1,7 @@
 pull_request_rules:
   - name: Automatic merge on approval
     conditions:
-      - author=Paolo Boni
+      - author=paoloboni
       - title~=^Update\s.*
       - "status-success=test (adopt@1.8, 2.12.16)"
       - "status-success=test (adopt@1.8, 2.13.8)"
