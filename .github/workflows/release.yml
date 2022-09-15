@@ -1,0 +1,41 @@
+---
+name: Release
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+env:
+  SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
+  SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
+  PGP_PASSPHRASE: ${{ secrets.GPG_SECRET_KEY_PASSPHRASE }}
+  PGP_SECRET: ${{ secrets.GPG_SECRET_KEY }}
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Setup
+        uses: olafurpg/setup-scala@v11
+        with:
+          java-version: openjdk@1.11
+      - name: Cache SBT
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.ivy2/cache
+            ~/.sbt
+          key: ${{ runner.os }}-sbt-${{ hashFiles('**/build.sbt') }}
+      - name: Set version
+        run: |
+          VERSION=${{ github.ref_name }}
+          echo "VERSION=${VERSION:1}" >> $GITHUB_ENV
+      - name: Import GPG key
+        uses: crazy-max/ghaction-import-gpg@v5
+        with:
+          gpg_private_key: ${{ secrets.GPG_SECRET_KEY }}
+          passphrase: ${{ secrets.GPG_SECRET_KEY_PASSPHRASE }}
+      - name: Release
+        run: sbt 'set version:="${{ env.VERSION }}";release cross with-defaults skip-tests'
+        shell: bash
+        timeout-minutes: 10
