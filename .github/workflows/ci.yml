@@ -36,6 +36,12 @@ jobs:
 #        run: sbt ++${{ matrix.scala }} scalafmtCheckAll scalafmtSbtCheck headerCheck test:headerCheck coverage test coverageReport
         run: sbt ++${{ matrix.scala }} scalafmtCheckAll scalafmtSbtCheck headerCheck test:headerCheck test
         shell: bash
+      - name: Run Snyk to check for vulnerabilities
+        uses: snyk/actions/scala@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --severity-threshold=high
 #      - name: Upload coverage to Codecov
 #        uses: codecov/codecov-action@v1
 #        with:
