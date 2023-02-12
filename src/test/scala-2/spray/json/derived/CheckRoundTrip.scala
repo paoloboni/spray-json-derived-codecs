@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Paolo Boni
+ * Copyright 2023 Paolo Boni
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@ import spray.json.{JsValue, JsonFormat, _}
 trait CheckRoundTrip { self: Matchers =>
   def checkRoundTrip[A: JsonFormat](a: A, expectedJson: String): Assertion = {
     val parsed: JsValue = expectedJson.parseJson
-    a.toJson should ===(parsed)
-    parsed.convertTo[A] should ===(a)
+    (a.toJson, parsed.convertTo[A]) should ===(parsed -> a)
   }
 }

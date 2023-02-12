@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Paolo Boni
+ * Copyright 2023 Paolo Boni
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -76,13 +76,13 @@ class DerivedCodecsSpec
           animal,
           s"""{"type": "Cat", "name": "${animal.name}", "livesLeft": ${animal.livesLeft}}"""
         )
-      }
+      }: Unit
       forAll { animal: Dog =>
         checkRoundTrip[Animal](
           animal,
           s"""{"type": "Dog", "name": "${animal.name}", "bonesHidden": ${animal.bonesHidden}}"""
         )
-      }
+      }: Unit
     }
 
     Scenario("sum types with discriminator") {
@@ -99,13 +99,13 @@ class DerivedCodecsSpec
           animal,
           s"""{"animalType": "Cat", "name": "${animal.name}", "livesLeft": ${animal.livesLeft}}"""
         )
-      }
+      }: Unit
       forAll { animal: Dog =>
         checkRoundTrip[Animal](
           animal,
           s"""{"animalType": "Dog", "name": "${animal.name}", "bonesHidden": ${animal.bonesHidden}}"""
         )
-      }
+      }: Unit
     }
 
     Scenario("sum types when discriminator indicates non-existing type") {
@@ -122,7 +122,7 @@ class DerivedCodecsSpec
             s"""failed to decode ${implicitly[ClassTag[Animal]].toString()}: type="${`type`}" is not defined"""
           )
         }
-      }
+      }: Unit
     }
 
     Scenario("sum types when discriminator not found") {
@@ -140,7 +140,7 @@ class DerivedCodecsSpec
             s"""Failed to decode ${implicitly[ClassTag[Animal]].toString()}: discriminator "type" not found"""
           )
         }
-      }
+      }: Unit
     }
 
     Scenario("recursive types #1") {
@@ -156,7 +156,7 @@ class DerivedCodecsSpec
           tree,
           s"""{"type": "Leaf", "s": "${tree.s}"}"""
         )
-      }
+      }: Unit
       checkRoundTrip[Tree](
         Node(Node(Leaf("1"), Leaf("2")), Leaf("3")),
         s"""{
@@ -205,13 +205,13 @@ class DerivedCodecsSpec
           quux,
           s"""{"value": "${quux.value}"}"""
         )
-      }
+      }: Unit
       forAll { quux: Quux[Int] =>
         checkRoundTrip[Quux[Int]](
           quux,
           s"""{"value": ${quux.value}}"""
         )
-      }
+      }: Unit
     }
 
     Scenario("option values default rendering") {
@@ -220,10 +220,10 @@ class DerivedCodecsSpec
 
       case class Dog(toy: Option[String])
 
-      checkRoundTrip[Dog](Dog(Some("ball")), """{"toy": "ball"}""")
-      Dog(toy = None).toJson.compactPrint should ===("""{}""")
+      checkRoundTrip[Dog](Dog(Some("ball")), """{"toy": "ball"}"""): Unit
+      Dog(toy = None).toJson.compactPrint should ===("""{}"""): Unit
 
-      checkRoundTrip[Dog](Dog(None), """{}""")
+      checkRoundTrip[Dog](Dog(None), """{}"""): Unit
     }
 
     Scenario("option values render nulls") {
@@ -233,7 +233,7 @@ class DerivedCodecsSpec
       new derived.WithConfiguration {
         implicit val configuration: Configuration = Configuration(renderNullOptions = true)
         case class Dog(toy: Option[String])
-        Dog(toy = None).toJson.compactPrint should ===("""{"toy":null}""")
+        Dog(toy = None).toJson.compactPrint should ===("""{"toy":null}"""): Unit
       }
     }
 
