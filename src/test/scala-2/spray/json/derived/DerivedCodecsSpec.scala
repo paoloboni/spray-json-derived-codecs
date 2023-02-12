@@ -42,12 +42,11 @@ class DerivedCodecsSpec
       import spray.json.derived.auto._
 
       case class Cat(name: String, livesLeft: Int)
-      forAll {
-        cat: Cat =>
-          checkRoundTrip[Cat](
-            cat,
-            s"""{"name": "${cat.name}", "livesLeft": ${cat.livesLeft}}"""
-          )
+      forAll { cat: Cat =>
+        checkRoundTrip[Cat](
+          cat,
+          s"""{"name": "${cat.name}", "livesLeft": ${cat.livesLeft}}"""
+        )
       }
     }
 
@@ -56,12 +55,11 @@ class DerivedCodecsSpec
       import spray.json.derived.auto._
 
       type Cat = (String, Int)
-      forAll {
-        cat: Cat =>
-          checkRoundTrip[Cat](
-            cat,
-            s"""["${cat._1}", ${cat._2}]"""
-          )
+      forAll { cat: Cat =>
+        checkRoundTrip[Cat](
+          cat,
+          s"""["${cat._1}", ${cat._2}]"""
+        )
       }
     }
 
@@ -73,19 +71,17 @@ class DerivedCodecsSpec
       case class Cat(name: String, livesLeft: Int)   extends Animal
       case class Dog(name: String, bonesHidden: Int) extends Animal
 
-      forAll {
-        animal: Cat =>
-          checkRoundTrip[Animal](
-            animal,
-            s"""{"type": "Cat", "name": "${animal.name}", "livesLeft": ${animal.livesLeft}}"""
-          )
+      forAll { animal: Cat =>
+        checkRoundTrip[Animal](
+          animal,
+          s"""{"type": "Cat", "name": "${animal.name}", "livesLeft": ${animal.livesLeft}}"""
+        )
       }
-      forAll {
-        animal: Dog =>
-          checkRoundTrip[Animal](
-            animal,
-            s"""{"type": "Dog", "name": "${animal.name}", "bonesHidden": ${animal.bonesHidden}}"""
-          )
+      forAll { animal: Dog =>
+        checkRoundTrip[Animal](
+          animal,
+          s"""{"type": "Dog", "name": "${animal.name}", "bonesHidden": ${animal.bonesHidden}}"""
+        )
       }
     }
 
@@ -98,19 +94,17 @@ class DerivedCodecsSpec
       case class Cat(name: String, livesLeft: Int)   extends Animal
       case class Dog(name: String, bonesHidden: Int) extends Animal
 
-      forAll {
-        animal: Cat =>
-          checkRoundTrip[Animal](
-            animal,
-            s"""{"animalType": "Cat", "name": "${animal.name}", "livesLeft": ${animal.livesLeft}}"""
-          )
+      forAll { animal: Cat =>
+        checkRoundTrip[Animal](
+          animal,
+          s"""{"animalType": "Cat", "name": "${animal.name}", "livesLeft": ${animal.livesLeft}}"""
+        )
       }
-      forAll {
-        animal: Dog =>
-          checkRoundTrip[Animal](
-            animal,
-            s"""{"animalType": "Dog", "name": "${animal.name}", "bonesHidden": ${animal.bonesHidden}}"""
-          )
+      forAll { animal: Dog =>
+        checkRoundTrip[Animal](
+          animal,
+          s"""{"animalType": "Dog", "name": "${animal.name}", "bonesHidden": ${animal.bonesHidden}}"""
+        )
       }
     }
 
@@ -121,14 +115,13 @@ class DerivedCodecsSpec
       sealed trait Animal
       case class Cat(name: String, livesLeft: Int) extends Animal
 
-      forAll {
-        `type`: String =>
-          whenever(`type` != "Cat") {
-            val ex = intercept[DeserializationException](s"""{"type": "${`type`}"}""".parseJson.convertTo[Animal])
-            ex.getMessage should ===(
-              s"""failed to decode ${implicitly[ClassTag[Animal]].toString()}: type="${`type`}" is not defined"""
-            )
-          }
+      forAll { `type`: String =>
+        whenever(`type` != "Cat") {
+          val ex = intercept[DeserializationException](s"""{"type": "${`type`}"}""".parseJson.convertTo[Animal])
+          ex.getMessage should ===(
+            s"""failed to decode ${implicitly[ClassTag[Animal]].toString()}: type="${`type`}" is not defined"""
+          )
+        }
       }
     }
 
@@ -139,15 +132,14 @@ class DerivedCodecsSpec
       sealed trait Animal
       case class Cat(name: String, livesLeft: Int) extends Animal
 
-      forAll {
-        discriminator: String =>
-          whenever(discriminator != "type") {
-            val ex =
-              intercept[DeserializationException](s"""{"$discriminator": "any"}""".parseJson.convertTo[Animal])
-            ex.getMessage should ===(
-              s"""Failed to decode ${implicitly[ClassTag[Animal]].toString()}: discriminator "type" not found"""
-            )
-          }
+      forAll { discriminator: String =>
+        whenever(discriminator != "type") {
+          val ex =
+            intercept[DeserializationException](s"""{"$discriminator": "any"}""".parseJson.convertTo[Animal])
+          ex.getMessage should ===(
+            s"""Failed to decode ${implicitly[ClassTag[Animal]].toString()}: discriminator "type" not found"""
+          )
+        }
       }
     }
 
@@ -159,12 +151,11 @@ class DerivedCodecsSpec
       case class Leaf(s: String)            extends Tree
       case class Node(lhs: Tree, rhs: Tree) extends Tree
 
-      forAll {
-        tree: Leaf =>
-          checkRoundTrip[Tree](
-            tree,
-            s"""{"type": "Leaf", "s": "${tree.s}"}"""
-          )
+      forAll { tree: Leaf =>
+        checkRoundTrip[Tree](
+          tree,
+          s"""{"type": "Leaf", "s": "${tree.s}"}"""
+        )
       }
       checkRoundTrip[Tree](
         Node(Node(Leaf("1"), Leaf("2")), Leaf("3")),
