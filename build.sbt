@@ -34,7 +34,7 @@ lazy val root = (project in file("."))
         )
     })
   )
-  .settings(scalacOptions -= "-Vimplicits")
+  .settings(scalacOptions --= Seq("-Vimplicits", "-Ywarn-value-discard"))
   .enablePlugins(AutomateHeaderPlugin)
 
 import ReleaseTransformations._
