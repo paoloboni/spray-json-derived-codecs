@@ -18,6 +18,10 @@ package spray
 package json
 package derived
 
+import spray.json.{JsString, JsValue, JsonFormat}
+
+import spray.json.derived.MkJsonFormat
+
 import scala.deriving._
 import scala.compiletime._
 
@@ -52,6 +56,7 @@ object LazyMk {
     val pElem = obj.asInstanceOf[Product]
     (pElem.productElementNames.toList zip pElem.productIterator.toList zip formats)
       .map { case ((label, elem), format) =>
+        val encoded = format.asInstanceOf[JsonFormat[Any]].write(elem)
         elem match {
           case None if !configuration.renderNullOptions =>
             JsObject.empty

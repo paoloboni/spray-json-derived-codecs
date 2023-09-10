@@ -4,7 +4,7 @@ name := "spray-json-derived-codecs"
 
 lazy val scala212               = "2.12.17"
 lazy val scala213               = "2.13.10"
-lazy val scala3                 = "3.3.1"
+lazy val scala3                 = "3.2.2"
 lazy val supportedScalaVersions = List(scala212, scala213, scala3)
 
 ThisBuild / scalafmtOnCompile := false
@@ -13,7 +13,7 @@ ThisBuild / startYear         := Some(2020)
 
 lazy val root = (project in file("."))
   .settings(
-    scalaVersion                  := scala3,
+    scalaVersion                  := scala213,
     releaseCrossBuild             := true,
     releasePublishArtifactsAction := PgpKeys.publishSigned.value,
     crossScalaVersions            := supportedScalaVersions,
