@@ -18,6 +18,4 @@ package spray
 package json
 package derived
 
-import scala.annotation.implicitNotFound
-
 class MkJsonFormat[T](val value: Context => JsonFormat[T]) extends AnyVal
