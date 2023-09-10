@@ -13,7 +13,7 @@ ThisBuild / startYear         := Some(2020)
 
 lazy val root = (project in file("."))
   .settings(
-    scalaVersion                  := scala213,
+    scalaVersion                  := scala3,
     releaseCrossBuild             := true,
     releasePublishArtifactsAction := PgpKeys.publishSigned.value,
     crossScalaVersions            := supportedScalaVersions,
