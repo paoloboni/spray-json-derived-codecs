@@ -48,7 +48,6 @@ class DerivedCodecsSpec
 
     Scenario("tuple type") {
       import spray.json.DefaultJsonProtocol._
-      import spray.json.derived.auto._
 
       type Cat = (String, Int)
       val cat: Cat = ("Oliver", 7)
